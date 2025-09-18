@@ -11,6 +11,14 @@ OpenAI integrations
 3. Name your new secret key and click `Create secret key`.
 4. Copy your secret key and add it to the [Workflow’s Configuration](https://www.alfredapp.com/help/workflows/user-configuration/).
 
+## Storage Security
+
+Set the `storage_secret` workflow variable to enable at-rest encryption for chat history and the streaming state. The secret is hashed with SHA-256 and used with AES-GCM, so pick a long, unique passphrase.
+
+* Existing plain-text histories are re-encrypted the next time you send a message.
+* `chat.json` and `stream.txt` are written with `0600` permissions once encryption is on.
+* Leave the variable empty if you prefer the previous plain-text behaviour.
+
 ## Usage
 
 ### ChatGPT

@@ -1,5 +1,9 @@
 # Frequently Asked Questions (FAQ)
 
+### How do I encrypt my saved chats?
+
+Set the `storage_secret` workflow variable under Configuration. The workflow derives an AES-GCM key from the value and encrypts `chat.json` and `stream.txt` on disk. Remove the value to return to plain-text storage.
+
 ### How do I set up an alternative AI model?
 
 The workflow offers the ability to change the API end points and override model names in the [Workflow Environment Variables](https://www.alfredapp.com/help/workflows/advanced/variables/#environment). This requires advanced configuration and is not something we can provide support for, but [our community are doing it with great success and can help you](https://www.alfredforum.com/topic/21544-using-alternative-and-local-models-with-the-chatgpt-dall-e-workflow/).

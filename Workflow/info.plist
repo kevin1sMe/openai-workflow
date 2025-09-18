@@ -1515,9 +1515,49 @@ function envVar(varName) {
 }
 
 
+function helperBinary() {
+  return `${envVar("alfred_workflow_data")}/chatgpt-helper`
+}
+
+function runHelperDump(path) {
+  const helper = helperBinary()
+  if (!$.NSFileManager.defaultManager.isExecutableFileAtPath(helper)) return "[]"
+  const task = $.NSTask.alloc.init()
+  task.setLaunchPath(helper)
+  task.setArguments(["--dump-chat", path])
+  const outPipe = $.NSPipe.pipe()
+  const errPipe = $.NSPipe.pipe()
+  task.setStandardOutput(outPipe)
+  task.setStandardError(errPipe)
+  task.launch()
+  task.waitUntilExit()
+  if (task.terminationStatus !== 0) {
+    const errOutput = $.NSString.alloc.initWithDataEncoding(errPipe.fileHandleForReading.readDataToEndOfFile(), $.NSUTF8StringEncoding)
+    return errOutput ? errOutput.js : "[]"
+  }
+  const output = $.NSString.alloc.initWithDataEncoding(outPipe.fileHandleForReading.readDataToEndOfFile(), $.NSUTF8StringEncoding)
+  return output ? output.js : "[]"
+}
+
 function readChat(path) {
-  const chatString = $.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, undefined).js
-  return JSON.parse(chatString)
+  const chatContent = $.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, undefined)
+  if (!chatContent) return []
+  const text = chatContent.js
+  const trimmed = text.trim()
+  if (trimmed.length === 0) return []
+  const needsDecrypt = trimmed.startsWith("ENCv1:")
+  if (!needsDecrypt) {
+    try {
+      return JSON.parse(text)
+    } catch (error) {
+      // fall through to helper
+    }
+  }
+  try {
+    return JSON.parse(runHelperDump(path))
+  } catch (error) {
+    return []
+  }
 }
 
 function markdownChat(messages, ignoreLastInterrupted = true) {
@@ -1621,9 +1661,49 @@ function dirContents(path) {
     .js.map(p =&gt; p.path.js).sort()
 }
 
+function helperBinary() {
+  return `${envVar("alfred_workflow_data")}/chatgpt-helper`
+}
+
+function runHelperDump(path) {
+  const helper = helperBinary()
+  if (!$.NSFileManager.defaultManager.isExecutableFileAtPath(helper)) return "[]"
+  const task = $.NSTask.alloc.init()
+  task.setLaunchPath(helper)
+  task.setArguments(["--dump-chat", path])
+  const outPipe = $.NSPipe.pipe()
+  const errPipe = $.NSPipe.pipe()
+  task.setStandardOutput(outPipe)
+  task.setStandardError(errPipe)
+  task.launch()
+  task.waitUntilExit()
+  if (task.terminationStatus !== 0) {
+    const errOutput = $.NSString.alloc.initWithDataEncoding(errPipe.fileHandleForReading.readDataToEndOfFile(), $.NSUTF8StringEncoding)
+    return errOutput ? errOutput.js : "[]"
+  }
+  const output = $.NSString.alloc.initWithDataEncoding(outPipe.fileHandleForReading.readDataToEndOfFile(), $.NSUTF8StringEncoding)
+  return output ? output.js : "[]"
+}
+
 function readChat(path) {
-  const chatString = $.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, undefined).js
-  return JSON.parse(chatString)
+  const chatContent = $.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, undefined)
+  if (!chatContent) return []
+  const text = chatContent.js
+  const trimmed = text.trim()
+  if (trimmed.length === 0) return []
+  const needsDecrypt = trimmed.startsWith("ENCv1:")
+  if (!needsDecrypt) {
+    try {
+      return JSON.parse(text)
+    } catch (error) {
+      // fall through to helper
+    }
+  }
+  try {
+    return JSON.parse(runHelperDump(path))
+  } catch (error) {
+    return []
+  }
 }
 
 function trashChat(path) {
